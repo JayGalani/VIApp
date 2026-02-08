@@ -1,0 +1,14 @@
+export const LOGIN_REQUEST = 'LOGIN_REQUEST';
+export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const LOGIN_FAILURE = 'LOGIN_FAILURE';
+
+export const CHECK_AUTH_REQUEST = 'CHECK_AUTH_REQUEST';
+export const CHECK_AUTH_SUCCESS = 'CHECK_AUTH_SUCCESS';
+export const CHECK_AUTH_FAILURE = 'CHECK_AUTH_FAILURE';
+
+export const LOGOUT = 'LOGOUT';
+export const CLEAR_ERROR = 'CLEAR_ERROR';
+
+export const ADD_MEDIA = 'ADD_MEDIA';
+export const SET_MEDIA_LIST = 'SET_MEDIA_LIST';
+export const DELETE_MEDIA = 'DELETE_MEDIA';
