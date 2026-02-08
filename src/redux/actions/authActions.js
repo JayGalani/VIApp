@@ -40,6 +40,9 @@ export const checkAuthStatus = () => async (dispatch) => {
   dispatch({ type: CHECK_AUTH_REQUEST });
   try {
     const token = await getToken();
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     if (token) {
       const user = { id: '1', name: 'Test User', email: STRINGS.LOGIN.EMAIL, token };
       dispatch({ type: CHECK_AUTH_SUCCESS, payload: user });
