@@ -37,21 +37,8 @@ const AddVideoScreen = ({ navigation }) => {
 
     setProcessingProgress(0);
 
-    const possibleIncrements = [5, 8, 9, 10, 11];
-    let interval_ms = 1000;
-
-    const fileSizeMB = fileSize / (1024 * 1024);
-
-    if (fileSizeMB < 10) {
-      interval_ms = 300;
-    } else if (fileSizeMB < 50) {
-      interval_ms = 400;
-    } else if (fileSizeMB < 200) {
-      interval_ms = 500;
-    } else {
-      interval_ms = 600;
-    }
-
+    const possibleIncrements = [5, 8, 12, 15];
+    const interval_ms = 100;
 
     const interval = setInterval(() => {
       if (!isMounted.current) {
@@ -60,12 +47,10 @@ const AddVideoScreen = ({ navigation }) => {
       }
       setProcessingProgress(prev => {
         if (prev >= 90) {
-          clearInterval(interval);
           return 90;
         }
         const randomIncrement = possibleIncrements[Math.floor(Math.random() * possibleIncrements.length)];
-        const newProgress = Math.min(90, prev + randomIncrement);
-        return newProgress;
+        return Math.min(90, prev + randomIncrement);
       });
     }, interval_ms);
 
@@ -206,8 +191,10 @@ const AddVideoScreen = ({ navigation }) => {
     const options = {
       mediaType: 'video',
       selectionLimit: 1,
-      videoQuality: 'medium',
+      // SIMULATOR COMPATIBILITY: Force H.264 transcoding
+      videoQuality: 'low', // 'low' or 'medium' forces transcoding to H.264 which Simulators support
       includeExtra: true,
+      assetRepresentationMode: 'current', // Avoids 'compatible' mode issues
     };
 
     try {

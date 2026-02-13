@@ -35,11 +35,21 @@ const UploadScreen = ({ navigation, route }) => {
         if (intervalRef.current) clearInterval(intervalRef.current);
 
         const fileSize = media?.sizeInBytes || 1024 * 1024;
-        const uploadSpeed = 2 * 1024 * 1024;
+        let uploadSpeed = 2 * 1024 * 1024; // Default 2 MB/s
+
+        // CHECK: Accelerate upload for large files (Video > 500MB, Photo > 50MB)
+        const isLargeVideo = media?.type === STRINGS.MEDIA_TYPES.VIDEO && fileSize > 500 * 1024 * 1024;
+        const isLargePhoto = media?.type === STRINGS.MEDIA_TYPES.PHOTO && fileSize > 50 * 1024 * 1024;
+
+        if (isLargeVideo || isLargePhoto) {
+            // Speed up to finish in approx 5 seconds
+            uploadSpeed = fileSize / 5;
+        }
+
         const totalSteps = 100;
 
         const totalDuration = (fileSize / uploadSpeed) * 1000;
-        const stepDuration = Math.max(50, totalDuration / totalSteps);
+        const stepDuration = Math.max(100, totalDuration / totalSteps);
 
         let currentProgress = 0;
 

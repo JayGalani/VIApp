@@ -16,6 +16,8 @@ const MediaPreview = ({
     progress = 0
 }) => {
 
+    const [imageError, setImageError] = React.useState(false);
+
     const renderContent = () => {
         if (!uri) {
             return (
@@ -33,13 +35,36 @@ const MediaPreview = ({
         }
 
         if (type === 'photo') {
-            return <Image source={{ uri }} style={styles.previewImage} />;
+            if (imageError) {
+                return (
+                    <View style={styles.placeholder}>
+                        <ImageIcon color={COLORS.error} size={48} />
+                        <Text style={[styles.placeholderText, { color: COLORS.error }]}>
+                            Failed to load image
+                        </Text>
+                        <Text style={styles.errorSubText}>
+                            (Preview may not be supported on this Simulator)
+                        </Text>
+                    </View>
+                );
+            }
+            return (
+                <Image
+                    source={{ uri }}
+                    style={styles.previewImage}
+                    onError={() => setImageError(true)}
+                />
+            );
         }
 
         return (
             <View style={styles.videoPlaceholder}>
-                {thumbnailUri ? (
-                    <Image source={{ uri: thumbnailUri }} style={styles.previewImage} />
+                {thumbnailUri && !imageError ? (
+                    <Image
+                        source={{ uri: thumbnailUri }}
+                        style={styles.previewImage}
+                        onError={() => setImageError(true)}
+                    />
                 ) : (
                     <View style={styles.videoPlaceholderGray}>
                         <FileVideo color={COLORS.TEXT_SECONDARY} size={64} style={styles.videoIcon} />
@@ -48,7 +73,7 @@ const MediaPreview = ({
                         </View>
                         <Text style={styles.videoNameMargin}>{fileName || STRINGS.ADD_VIDEO.DEFAULT_FILENAME}</Text>
                         <Text style={styles.videoSize}>
-                            {fileSize ? (fileSize / 1024 / 1024).toFixed(2) + STRINGS.ADD_VIDEO.MB : STRINGS.ADD_VIDEO.SIZE_UNKNOWN}
+                            {fileSize ? (fileSize / 1024 / 1024).toFixed(2) + ' MB' : STRINGS.ADD_VIDEO.SIZE_UNKNOWN}
                         </Text>
                     </View>
                 )}
@@ -126,6 +151,19 @@ const styles = StyleSheet.create({
         color: COLORS.GRAY,
         fontSize: SIZES.caption,
     },
+    errorSubText: {
+        ...FONTS.REGULAR,
+        color: COLORS.error,
+        fontSize: SIZES.caption,
+        textAlign: 'center',
+        marginTop: 4,
+    },
+    simWarning: {
+        ...FONTS.REGULAR,
+        color: COLORS.orange || '#FFA500',
+        fontSize: SIZES.caption,
+        marginTop: 8,
+    }
 });
 
 export default memo(MediaPreview);
