@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { COLORS } from '../common/colors';
 import { FONTS, SIZES } from '../common/fonts';
@@ -20,9 +20,9 @@ const CustomButton = ({ title, onPress, isLoading, disabled, style, textStyle, s
         <ActivityIndicator color={secondary ? COLORS.PRIMARY : COLORS.WHITE} />
       ) : (
         <Text style={[
-            styles.text, 
-            secondary && styles.secondaryText,
-            textStyle
+          styles.text,
+          secondary && styles.secondaryText,
+          textStyle
         ]}>{title}</Text>
       )}
     </TouchableOpacity>
@@ -47,9 +47,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   secondaryButton: {
-      backgroundColor: COLORS.SECONDARY,
-      elevation: 0,
-      shadowOpacity: 0,
+    backgroundColor: COLORS.SECONDARY,
+    elevation: 0,
+    shadowOpacity: 0,
   },
   disabled: {
     opacity: 0.7,
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   secondaryText: {
-      color: COLORS.WHITE, 
+    color: COLORS.WHITE,
   }
 });
 
-export default CustomButton;
+export default memo(CustomButton);

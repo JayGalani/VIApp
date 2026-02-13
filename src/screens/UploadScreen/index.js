@@ -3,13 +3,13 @@ import { View, StyleSheet, Text, StatusBar, TouchableOpacity, Image, ActivityInd
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CheckCircle, AlertCircle, XCircle, FileVideo, Image as ImageIcon } from 'lucide-react-native';
+import { FileVideo, Image as ImageIcon } from 'lucide-react-native';
 
 import { addMedia } from '../../redux/actions/mediaActions';
 import { COLORS } from '../../common/colors';
 import { STRINGS } from '../../common/strings';
 import { FONTS, SIZES } from '../../common/fonts';
-import { CustomButton, CustomHeader } from '../../components';
+import { CustomButton, CustomHeader, StatusFeedback, ProgressBar } from '../../components';
 
 const renderMediaIcon = (type) => {
     if (type === STRINGS.MEDIA_TYPES.VIDEO) {
@@ -186,61 +186,26 @@ const UploadScreen = ({ navigation, route }) => {
                     <View style={styles.statusSection}>
                         {status === 'uploading' && (
                             <View style={styles.uploadInfo}>
-                                <View style={styles.progressTextContainer}>
-                                    <Text style={[
-                                        styles.percentText,
-                                        {
-                                            fontSize: width * 0.18,
-                                            lineHeight: width * 0.18
-                                        }
-                                    ]}>{progress}%</Text>
-                                    <Text style={styles.uploadingLabel}>{STRINGS.UPLOAD.PROGRESS}</Text>
-                                </View>
-                                <View style={styles.barContainer}>
-                                    <View style={[
-                                        styles.barFill,
-                                        {
-                                            width: `${progress}%`,
-                                            backgroundColor: getStatusColor()
-                                        }
-                                    ]} />
-                                </View>
-                            </View>
-                        )}
-
-                        {status === 'success' && (
-                            <View style={styles.statusMessage}>
-                                <CheckCircle size={width * 0.15} color={COLORS.SUCCESS} style={styles.statusIcon} />
-                                <Text style={styles.statusTitleSuccess}>{STRINGS.UPLOAD.SUCCESS}</Text>
-                                <Text style={styles.statusDesc} numberOfLines={2}>{STRINGS.UPLOAD.SUCCESS_SUB}</Text>
-                            </View>
-                        )}
-
-                        {status === 'error' && (
-                            <View style={styles.statusMessage}>
-                                <AlertCircle size={width * 0.15} color={COLORS.ERROR} style={styles.statusIcon} />
-                                <Text style={styles.statusTitleError}>{STRINGS.UPLOAD.FAILURE_TITLE}</Text>
-                                <Text style={styles.statusDesc} numberOfLines={2}>{STRINGS.UPLOAD.FAILURE}</Text>
-                                <CustomButton
-                                    title={STRINGS.UPLOAD.BUTTON_RETRY}
-                                    onPress={handleRetry}
-                                    style={styles.actionButton}
+                                <ProgressBar
+                                    progress={progress}
+                                    label={STRINGS.UPLOAD.PROGRESS}
+                                    color={getStatusColor()}
+                                    height={14}
                                 />
                             </View>
                         )}
 
-                        {status === 'cancelled' && (
-                            <View style={styles.statusMessage}>
-                                <XCircle size={width * 0.15} color={COLORS.WARNING} style={styles.statusIcon} />
-                                <Text style={styles.statusTitleWarning}>{STRINGS.UPLOAD.CANCELLED_TITLE}</Text>
-                                <Text style={styles.statusDesc} numberOfLines={2}>{STRINGS.UPLOAD.CANCELLED_SUB}</Text>
-                                <CustomButton
-                                    title={STRINGS.UPLOAD.RESUME}
-                                    onPress={handleRetry}
-                                    style={styles.actionButton}
-                                />
-                            </View>
-                        )}
+                        <StatusFeedback
+                            status={status}
+                            successTitle={STRINGS.UPLOAD.SUCCESS}
+                            successMessage={STRINGS.UPLOAD.SUCCESS_SUB}
+                            errorTitle={STRINGS.UPLOAD.FAILURE_TITLE}
+                            errorMessage={STRINGS.UPLOAD.FAILURE}
+                            cancelledTitle={STRINGS.UPLOAD.CANCELLED_TITLE}
+                            cancelledMessage={STRINGS.UPLOAD.CANCELLED_SUB}
+                            onRetry={handleRetry}
+                            onResume={handleRetry}
+                        />
                     </View>
                 </View>
 

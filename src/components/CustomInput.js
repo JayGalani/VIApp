@@ -1,71 +1,71 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../common/colors';
 import { FONTS, SIZES } from '../common/fonts';
 
-const CustomInput = ({ 
-    value, 
-    onChangeText, 
-    placeholder, 
-    secureTextEntry, 
-    error, 
-    LeftIcon, 
-    RightIcon,
-    onRightIconPress,
-    keyboardType,
-    autoCapitalize,
-    multiline,
-    editable,
-    style,
-    inputStyle,
-    containerStyle
+const CustomInput = ({
+  value,
+  onChangeText,
+  placeholder,
+  secureTextEntry,
+  error,
+  LeftIcon,
+  RightIcon,
+  onRightIconPress,
+  keyboardType,
+  autoCapitalize,
+  multiline,
+  editable,
+  style,
+  inputStyle,
+  containerStyle
 }) => {
-    return (
-        <View style={[styles.container, containerStyle]}>
-            <View style={[
-                styles.inputWrapper, 
-                error && styles.inputWrapperError,
-                style
-            ]}>
-                {LeftIcon && (
-                    <LeftIcon 
-                        size={20} 
-                        color={error ? COLORS.ERROR : COLORS.GRAY} 
-                        style={styles.inputIcon} 
-                    />
-                )}
-                <TextInput
-                    style={[styles.input, inputStyle, multiline && styles.multilineInput]}
-                    placeholder={placeholder}
-                    placeholderTextColor={COLORS.GRAY}
-                    value={value}
-                    onChangeText={onChangeText}
-                    secureTextEntry={secureTextEntry}
-                    keyboardType={keyboardType}
-                    autoCapitalize={autoCapitalize}
-                    multiline={multiline}
-                    editable={editable}
-                    textAlignVertical={multiline ? 'top' : 'center'}
-                />
-                {RightIcon && (
-                    <TouchableOpacity 
-                        onPress={onRightIconPress} 
-                        disabled={!onRightIconPress} 
-                        style={styles.eyeIcon}
-                    >
-                        {RightIcon}
-                    </TouchableOpacity>
-                )}
-            </View>
-            {error ? <Text style={styles.fieldErrorText}>{error}</Text> : null}
-        </View>
-    );
+  return (
+    <View style={[styles.container, containerStyle]}>
+      <View style={[
+        styles.inputWrapper,
+        error && styles.inputWrapperError,
+        style
+      ]}>
+        {LeftIcon && (
+          <LeftIcon
+            size={20}
+            color={error ? COLORS.ERROR : COLORS.GRAY}
+            style={styles.inputIcon}
+          />
+        )}
+        <TextInput
+          style={[styles.input, inputStyle, multiline && styles.multilineInput]}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.GRAY}
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize}
+          multiline={multiline}
+          editable={editable}
+          textAlignVertical={multiline ? 'top' : 'center'}
+        />
+        {RightIcon && (
+          <TouchableOpacity
+            onPress={onRightIconPress}
+            disabled={!onRightIconPress}
+            style={styles.eyeIcon}
+          >
+            {RightIcon}
+          </TouchableOpacity>
+        )}
+      </View>
+      {error ? <Text style={styles.fieldErrorText}>{error}</Text> : null}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
-      marginBottom: 16,
-      width: '100%',
+    marginBottom: 16,
+    width: '100%',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   multilineInput: {
-      height: 120,
-      paddingVertical: 12,
+    height: 120,
+    paddingVertical: 12,
   },
   eyeIcon: {
     padding: 4,
@@ -107,4 +107,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomInput;
+export default memo(CustomInput);

@@ -1,51 +1,66 @@
-import { STRINGS } from '../common/strings';
 
-const PHOTO_MAX_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
-const VIDEO_MAX_SIZE_BYTES = 200 * 1024 * 1024; // 200MB
 
-export const validatePhoto = (photo) => {
-    if (!photo) return { isValid: false, error: STRINGS.COMMON.ERROR };
-
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
-    const allowedExts = ['jpg', 'jpeg', 'png', 'heic', 'heif'];
-
-    const fileExt = photo.uri?.split('.').pop().toLowerCase();
-    const isAllowedType = photo.type && allowedTypes.includes(photo.type.toLowerCase());
-    const isAllowedExt = allowedExts.includes(fileExt);
-
-    if (!isAllowedType && !isAllowedExt) {
-        return { isValid: false, error: STRINGS.ADD_PHOTO.FORMAT_ERROR };
-    }
-
-    if (photo.fileSize && photo.fileSize > PHOTO_MAX_SIZE_BYTES) {
-        return { isValid: false, error: STRINGS.ADD_PHOTO.SIZE_ERROR };
-    }
-
-    return { isValid: true };
+const getFileExtension = (file) => {
+    const name = file.fileName || file.uri || '';
+    return name.split('?')[0].split('.').pop()?.toLowerCase();
 };
 
+
+export const validatePhoto = (photo) => {
+    if (!photo) return { isValid: false, error: "Invalid file" };
+
+    const allowedExts = ['jpg', 'jpeg', 'png', 'heic', 'heif', 'webp'];
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp', 'image/jpg'];
+
+    const ext = getFileExtension(photo);
+    const mime = photo.type;
+
+    // Check mime type if available
+    if (mime && allowedMimes.includes(mime)) {
+        return { isValid: true };
+    }
+
+    // Fallback to extension check
+    if (allowedExts.includes(ext)) {
+        return { isValid: true };
+    }
+
+    return { isValid: false, error: "Unsupported image format" };
+};
+
+
+
 export const validateVideo = (video) => {
-    if (!video) return { isValid: false, error: 'Video data is missing' };
-    if (!video.uri) return { isValid: false, error: 'Video URI is missing' };
+    if (!video) return { isValid: false, error: "Invalid video" };
 
-    const allowedTypes = ['video/mp4', 'video/quicktime', 'video/x-matroska', 'video/mpeg', 'video/avi', 'video/webm'];
-    const allowedExts = ['mp4', 'mov', 'mkv', 'mpeg', 'mpg', 'avi', 'webm'];
+    const allowedExts = [
+        'mp4', 'mov', 'mkv', 'avi', 'webm', 'hevc', 'm4v', 'h264', 'h265', 'ts'
+    ];
 
-    const fileName = video.fileName || '';
-    const fileExt = (fileName || video.uri).split('.').pop().toLowerCase();
+    // Some common video MIME types
+    const allowedMimes = [
+        'video/mp4',
+        'video/quicktime',
+        'video/x-matroska',
+        'video/webm',
+        'video/hevc',
+        'video/x-m4v',
+        'video/3gpp',
+        'video/mp2t'
+    ];
 
-    const isAllowedType = video.type && allowedTypes.includes(video.type.toLowerCase());
-    const isAllowedExt = allowedExts.includes(fileExt);
+    const ext = getFileExtension(video);
+    const mime = video.type;
 
-    if (!isAllowedType && !isAllowedExt) {
-        return { isValid: false, error: STRINGS.ADD_VIDEO.FORMAT_ERROR };
+    if (mime && mime.startsWith('video/')) {
+        return { isValid: true };
     }
 
-    if (video.fileSize && video.fileSize > VIDEO_MAX_SIZE_BYTES) {
-        return { isValid: false, error: STRINGS.ADD_VIDEO.SIZE_ERROR };
+    if (allowedExts.includes(ext)) {
+        return { isValid: true };
     }
 
-    return { isValid: true };
+    return { isValid: false, error: "Unsupported video format" };
 };
 
 export const validateEmail = (email) => {

@@ -7,6 +7,9 @@ import MediaPreview from './MediaPreview';
 import MediaItem from './MediaItem';
 import MediaListComponent from './MediaListComponent';
 import MediaModal from './MediaModal';
+import StatusFeedback from './StatusFeedback';
+import ProgressBar from './ProgressBar';
+import ProcessingOverlay from './ProcessingOverlay';
 
 export {
     CustomButton,
@@ -18,4 +21,7 @@ export {
     MediaItem,
     MediaListComponent,
     MediaModal,
+    StatusFeedback,
+    ProgressBar,
+    ProcessingOverlay,
 };

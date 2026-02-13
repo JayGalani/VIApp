@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { memo } from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { FileVideo, PlayCircle, Image as ImageIcon } from 'lucide-react-native';
 import { COLORS } from '../common/colors';
 import { FONTS, SIZES } from '../common/fonts';
 import { STRINGS } from '../common/strings';
+import ProcessingOverlay from './ProcessingOverlay';
 
 const MediaPreview = ({
     type = 'photo',
@@ -11,7 +12,8 @@ const MediaPreview = ({
     thumbnailUri,
     fileName,
     fileSize,
-    isProcessing = false
+    isProcessing = false,
+    progress = 0
 }) => {
 
     const renderContent = () => {
@@ -57,13 +59,7 @@ const MediaPreview = ({
     return (
         <View style={styles.previewContainer}>
             {renderContent()}
-            {isProcessing && (
-                <View style={styles.loadingOverlay}>
-                    <View style={styles.loadingBox}>
-                        <ActivityIndicator size="large" color={COLORS.PRIMARY} />
-                    </View>
-                </View>
-            )}
+            <ProcessingOverlay isVisible={isProcessing} progress={progress} />
         </View>
     );
 };
@@ -83,10 +79,12 @@ const styles = StyleSheet.create({
     previewImage: {
         width: '100%',
         height: '100%',
-        resizeMode: 'contain',
+        resizeMode: 'cover',
+        borderRadius: 10,
     },
     placeholder: {
         alignItems: 'center',
+        padding: 20,
     },
     placeholderText: {
         ...FONTS.REGULAR,
@@ -113,7 +111,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 1,
     },
-
     videoIcon: {
         opacity: 0.5,
     },
@@ -129,29 +126,6 @@ const styles = StyleSheet.create({
         color: COLORS.GRAY,
         fontSize: SIZES.caption,
     },
-    loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 10,
-    },
-    loadingBox: {
-        width: 80,
-        height: 80,
-        backgroundColor: COLORS.WHITE,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
 });
 
-export default MediaPreview;
+export default memo(MediaPreview);

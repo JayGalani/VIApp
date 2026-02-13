@@ -9,80 +9,162 @@ import { COLORS } from '../../common/colors';
 import { requestMediaPermissions, validatePhoto } from '../../utils';
 import { CustomButton, CustomInput, CustomHeader, MediaPreview } from '../../components';
 
-
 const AddPhotoScreen = ({ navigation }) => {
   const [photo, setPhoto] = useState(null);
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSelectingCamera, setIsSelectingCamera] = useState(false);
+  const [isSelectingGallery, setIsSelectingGallery] = useState(false);
+  const [processingProgress, setProcessingProgress] = useState(0);
   const isMounted = useRef(true);
+  const progressIntervalRef = useRef(null);
 
   useEffect(() => {
     isMounted.current = true;
     return () => {
       isMounted.current = false;
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
     };
   }, []);
 
+  const simulateProgress = (fileSize = 0) => {
+    const possibleIncrements = [2, 3, 5, 8, 10];
+    let interval_ms = 800;
 
+    const fileSizeMB = fileSize / (1024 * 1024);
+
+    if (fileSizeMB < 10) {
+      interval_ms = 300;
+    } else if (fileSizeMB < 50) {
+      interval_ms = 400;
+    } else if (fileSizeMB < 200) {
+      interval_ms = 500;
+    } else {
+      interval_ms = 600;
+    }
+
+
+    const interval = setInterval(() => {
+      if (!isMounted.current) {
+        clearInterval(interval);
+        return;
+      }
+      setProcessingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        const randomIncrement = possibleIncrements[Math.floor(Math.random() * possibleIncrements.length)];
+        const newProgress = Math.min(90, prev + randomIncrement);
+        return newProgress;
+      });
+    }, interval_ms);
+
+    progressIntervalRef.current = interval;
+    return interval;
+  };
+
+  const handleCallback = async (response) => {
+    if (isMounted.current) {
+      setIsSelectingCamera(false);
+      setIsSelectingGallery(false);
+    }
+
+    if (!isMounted.current) return;
+
+    if (response.didCancel) return;
+
+    if (response.errorCode) {
+      Alert.alert(STRINGS.COMMON.ERROR, response.errorMessage || "An error occurred");
+      return;
+    }
+
+    if (response.assets && response.assets.length > 0) {
+      const selectedPhoto = response.assets[0];
+
+
+
+
+      if (!isValid) {
+        Alert.alert(STRINGS.COMMON.ERROR, vError);
+        return;
+      }
+
+      setProcessingProgress(0);
+
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+
+      setPhoto(selectedPhoto);
+      setIsProcessing(true);
+
+      const progressInterval = simulateProgress(selectedPhoto.fileSize);
+
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      clearInterval(progressInterval);
+
+      if (isMounted.current) {
+        setProcessingProgress(100);
+        setTimeout(() => {
+          if (isMounted.current) {
+            setIsProcessing(false);
+          }
+        }, 500);
+      }
+    }
+  };
 
   const handleSelectPhoto = async (type) => {
-    const options = {
-      mediaType: STRINGS.MEDIA_TYPES.PHOTO,
-      includeBase64: false,
-      maxHeight: 2000,
-      maxWidth: 2000,
-    };
+    const isCamera = type === 'camera';
+    if (isMounted.current) {
+      if (isCamera) setIsSelectingCamera(true);
+      else setIsSelectingGallery(true);
+    }
 
     const hasPermission = await requestMediaPermissions(type, STRINGS.MEDIA_TYPES.PHOTO);
     if (!hasPermission) {
+      if (isMounted.current) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
+      }
       Alert.alert(STRINGS.PERMISSIONS.DENIED_TITLE, `${STRINGS.PERMISSIONS.DENIED_MSG}${type}.`);
       return;
     }
 
-    const callback = (response) => {
-
-      if (response.didCancel || !isMounted.current) {
-        return;
-      } else if (response.errorCode) {
-        if (isMounted.current) {
-          Alert.alert(STRINGS.COMMON.ERROR, response.errorMessage);
-        }
-      } else if (response.assets && response.assets.length > 0) {
-        const selectedPhoto = response.assets[0];
-
-        const { isValid, error } = validatePhoto(selectedPhoto);
-
-        if (!isValid) {
-          if (isMounted.current) {
-            Alert.alert(STRINGS.COMMON.ERROR, error);
-          }
-          return;
-        }
-
-        if (isMounted.current) {
-          setPhoto(selectedPhoto);
-        }
-      }
+    const options = {
+      mediaType: 'photo',
+      selectionLimit: 1,
+      quality: 0.5, // Lower quality slightly to ensure aggressive compression/conversion triggering
+      maxWidth: 1920, // Resizing triggers format conversion to JPEG
+      maxHeight: 1920,
+      includeBase64: false,
     };
 
-    if (type === 'camera') {
-      try {
-        await launchCamera(options, callback);
-      } catch {
-        if (isMounted.current) Alert.alert(STRINGS.COMMON.ERROR, STRINGS.COMMON.CAMERA_LAUNCH_ERROR);
+    try {
+      let response;
+      if (isCamera) {
+        response = await launchCamera(options);
+      } else {
+        response = await launchImageLibrary(options);
       }
-    } else {
-      try {
-        await launchImageLibrary(options, callback);
-      } catch {
-        if (isMounted.current) Alert.alert(STRINGS.COMMON.ERROR, STRINGS.COMMON.GALLERY_LAUNCH_ERROR);
+      handleCallback(response);
+    } catch (err) {
+      if (isMounted.current) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
+        Alert.alert(STRINGS.COMMON.ERROR, isCamera ? STRINGS.COMMON.CAMERA_LAUNCH_ERROR : STRINGS.COMMON.GALLERY_LAUNCH_ERROR);
       }
     }
   };
 
   const handleProceedUpload = () => {
     if (!photo) return;
-
     if (!description.trim()) {
       setError(STRINGS.ADD_PHOTO.ERROR_DESCRIPTION);
       return;
@@ -94,7 +176,7 @@ const AddPhotoScreen = ({ navigation }) => {
       title: description.trim(),
       description: description.trim(),
       uri: photo.uri,
-      size: (photo.fileSize ? (photo.fileSize / 1024 / 1024).toFixed(2) : STRINGS.ADD_PHOTO.DEFAULT_SIZE) + STRINGS.ADD_PHOTO.MB,
+      size: (photo.fileSize ? (photo.fileSize / 1024 / 1024).toFixed(2) : '0.00') + ' MB',
       sizeInBytes: photo.fileSize || 500 * 1024,
       date: new Date().toLocaleDateString(),
     };
@@ -112,25 +194,10 @@ const AddPhotoScreen = ({ navigation }) => {
         handleBackPress();
         return true;
       };
-
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
       return () => subscription.remove();
     }, [])
   );
-
-  const handleDescriptionChange = (text) => {
-    setDescription(text);
-    if (error) setError('');
-  };
-
-  const handleCapturePress = () => {
-    handleSelectPhoto('camera');
-  };
-
-  const handleSelectPress = () => {
-    handleSelectPhoto('gallery');
-  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -142,28 +209,35 @@ const AddPhotoScreen = ({ navigation }) => {
       />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 25}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           style={styles.scrollView}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={true}
         >
           <MediaPreview
             type="photo"
             uri={photo ? photo.uri : null}
+            isProcessing={isProcessing}
+            progress={processingProgress}
           />
 
           {photo && (
             <View style={styles.inputSection}>
               <CustomInput
                 value={description}
-                onChangeText={handleDescriptionChange}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  if (error) setError('');
+                }}
                 placeholder={STRINGS.ADD_PHOTO.DESCRIPTION_PLACEHOLDER}
                 multiline
                 error={error}
+                editable={!isProcessing}
                 containerStyle={styles.descriptionInput}
               />
             </View>
@@ -173,22 +247,28 @@ const AddPhotoScreen = ({ navigation }) => {
             <View style={styles.buttonRow}>
               <CustomButton
                 title={STRINGS.ADD_PHOTO.CAPTURE}
-                onPress={handleCapturePress}
+                onPress={() => handleSelectPhoto('camera')}
                 secondary
+                isLoading={isSelectingCamera}
+                disabled={isSelectingCamera || isSelectingGallery || isProcessing}
                 style={styles.actionButton}
               />
               <CustomButton
                 title={STRINGS.ADD_PHOTO.SELECT}
-                onPress={handleSelectPress}
+                onPress={() => handleSelectPhoto('gallery')}
                 secondary
+                isLoading={isSelectingGallery}
+                disabled={isSelectingCamera || isSelectingGallery || isProcessing}
                 style={styles.actionButton}
               />
             </View>
 
-            {photo && (
+            {photo && !isProcessing && (
               <CustomButton
                 title={STRINGS.ADD_PHOTO.UPLOAD}
                 onPress={handleProceedUpload}
+                isLoading={false}
+                disabled={isSelectingCamera || isSelectingGallery || isProcessing}
                 style={styles.uploadButton}
               />
             )}
@@ -212,8 +292,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BACKGROUND,
   },
   scrollContent: {
+    flexGrow: 1,
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 60,
   },
   inputSection: {
     width: '100%',

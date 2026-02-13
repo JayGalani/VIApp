@@ -120,17 +120,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
-  //   tabItem: {
-  //     flex: 1,
-  //     justifyContent: 'center',
-  //     alignItems: 'center',
-  //   },
-  //   tabLabel: {
-  //     ...FONTS.MEDIUM,
-  //     fontSize: SIZES.caption,
-  //     marginTop: 4,
-  //     color: COLORS.GRAY,
-  //   },
 });
 
 export default DashboardLayout;
