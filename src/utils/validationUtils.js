@@ -10,53 +10,45 @@ export const validatePhoto = (photo) => {
     if (!photo) return { isValid: false, error: "Invalid file" };
 
     const allowedExts = ['jpg', 'jpeg', 'png', 'heic', 'heif', 'webp'];
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp', 'image/jpg'];
+    const allowedMimes = [
+        'image/jpeg', 'image/png', 'image/heic', 'image/heif',
+        'image/webp', 'image/jpg'
+    ];
 
     const ext = getFileExtension(photo);
-    const mime = photo.type;
+    const mime = photo.type?.toLowerCase();
 
-    // Check mime type if available
     if (mime && allowedMimes.includes(mime)) {
         return { isValid: true };
     }
 
-    // Fallback to extension check
-    if (allowedExts.includes(ext)) {
+    if (mime && mime.startsWith('image/')) {
         return { isValid: true };
     }
 
-    return { isValid: false, error: "Unsupported image format" };
-};
+    if (ext && allowedExts.includes(ext.toLowerCase())) {
+        return { isValid: true };
+    }
 
+    return { isValid: false, error: "Unsupported image format or invalid file" };
+};
 
 
 export const validateVideo = (video) => {
     if (!video) return { isValid: false, error: "Invalid video" };
 
     const allowedExts = [
-        'mp4', 'mov', 'mkv', 'avi', 'webm', 'hevc', 'm4v', 'h264', 'h265', 'ts'
+        'mp4', 'mov', 'mkv', 'avi', 'webm', 'hevc', 'm4v', 'h264', 'h265'
     ];
 
-    // Some common video MIME types
-    const allowedMimes = [
-        'video/mp4',
-        'video/quicktime',
-        'video/x-matroska',
-        'video/webm',
-        'video/hevc',
-        'video/x-m4v',
-        'video/3gpp',
-        'video/mp2t'
-    ];
-
+    const mime = video.type?.toLowerCase();
     const ext = getFileExtension(video);
-    const mime = video.type;
 
     if (mime && mime.startsWith('video/')) {
         return { isValid: true };
     }
 
-    if (allowedExts.includes(ext)) {
+    if (ext && allowedExts.includes(ext.toLowerCase())) {
         return { isValid: true };
     }
 

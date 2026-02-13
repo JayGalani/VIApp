@@ -64,7 +64,6 @@ const ProcessingOverlay = ({ isVisible, progress }) => {
                 </Svg>
                 <View style={styles.progressInner}>
                     <Text style={styles.percentText}>{Math.round(progress)}%</Text>
-                    <Text style={styles.processingText}>{STRINGS.COMMON.PROCESSING || 'PROCESSING'}</Text>
                 </View>
             </View>
         </View>

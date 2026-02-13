@@ -92,19 +92,25 @@ const AddVideoScreen = ({ navigation }) => {
 
     const assets = response.assets;
     if (!assets || assets.length === 0) {
+      if (isMounted.current) {
+        Alert.alert(STRINGS.COMMON.ERROR, "Failed to select video. Please try again.");
+      }
       return;
     }
 
     const selectedVideo = assets[0];
 
-
+    if (!selectedVideo.uri) {
+      if (isMounted.current) {
+        Alert.alert(STRINGS.COMMON.ERROR, "Failed to load video. Please try another one.");
+      }
+      return;
+    }
 
     const sourceUri = selectedVideo.uri;
 
     try {
       const { isValid, error: vError } = validateVideo(selectedVideo);
-
-
 
       if (!isValid) {
         if (isMounted.current) {
@@ -149,7 +155,7 @@ const AddVideoScreen = ({ navigation }) => {
         });
 
       const elapsedTime = Date.now() - startTime;
-      const minDisplayTime = 5000;
+      const minDisplayTime = 1000;
       const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
       if (remainingTime > 0) {
@@ -200,24 +206,31 @@ const AddVideoScreen = ({ navigation }) => {
     const options = {
       mediaType: 'video',
       selectionLimit: 1,
-      videoQuality: 'medium', // 'medium' forces H.264 encoding which fixes HEVC issues across platforms
+      videoQuality: 'medium',
+      includeExtra: true,
     };
 
     try {
       let response;
       if (type === 'camera') {
         response = await launchCamera(options);
-
       } else {
         response = await launchImageLibrary(options);
-
-
       }
+
+      if (isMounted.current) {
+        setIsSelecting(false);
+      }
+
       await handleCallback(response);
     } catch (err) {
       if (isMounted.current) {
         setIsSelecting(false);
         Alert.alert(STRINGS.COMMON.ERROR, type === 'camera' ? STRINGS.COMMON.CAMERA_LAUNCH_ERROR : STRINGS.COMMON.GALLERY_LAUNCH_ERROR);
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsSelecting(false);
       }
     }
   };

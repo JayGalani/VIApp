@@ -32,7 +32,7 @@ const AddPhotoScreen = ({ navigation }) => {
 
   const simulateProgress = (fileSize = 0) => {
     const possibleIncrements = [2, 3, 5, 8, 10];
-    let interval_ms = 800;
+    let interval_ms = 1000;
 
     const fileSizeMB = fileSize / (1024 * 1024);
 
@@ -82,11 +82,20 @@ const AddPhotoScreen = ({ navigation }) => {
       return;
     }
 
+    if (!response.assets || response.assets.length === 0) {
+      Alert.alert(STRINGS.COMMON.ERROR, "Failed to select image. Please try again.");
+      return;
+    }
+
     if (response.assets && response.assets.length > 0) {
       const selectedPhoto = response.assets[0];
 
+      if (!selectedPhoto.uri) {
+        Alert.alert(STRINGS.COMMON.ERROR, "Failed to load image. Please try another one.");
+        return;
+      }
 
-
+      const { isValid, error: vError } = validatePhoto(selectedPhoto);
 
       if (!isValid) {
         Alert.alert(STRINGS.COMMON.ERROR, vError);
@@ -105,7 +114,7 @@ const AddPhotoScreen = ({ navigation }) => {
 
       const progressInterval = simulateProgress(selectedPhoto.fileSize);
 
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       clearInterval(progressInterval);
 
@@ -140,10 +149,11 @@ const AddPhotoScreen = ({ navigation }) => {
     const options = {
       mediaType: 'photo',
       selectionLimit: 1,
-      quality: 0.5, // Lower quality slightly to ensure aggressive compression/conversion triggering
-      maxWidth: 1920, // Resizing triggers format conversion to JPEG
-      maxHeight: 1920,
+      quality: 0.99,
+      maxWidth: 4096,
+      maxHeight: 4096,
       includeBase64: false,
+      includeExtra: true,
     };
 
     try {
@@ -153,12 +163,23 @@ const AddPhotoScreen = ({ navigation }) => {
       } else {
         response = await launchImageLibrary(options);
       }
+
+      if (isMounted.current) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
+      }
+
       handleCallback(response);
     } catch (err) {
       if (isMounted.current) {
         setIsSelectingCamera(false);
         setIsSelectingGallery(false);
         Alert.alert(STRINGS.COMMON.ERROR, isCamera ? STRINGS.COMMON.CAMERA_LAUNCH_ERROR : STRINGS.COMMON.GALLERY_LAUNCH_ERROR);
+      }
+    } finally {
+      if (isMounted.current) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
       }
     }
   };
