@@ -3,6 +3,7 @@ import { View, StyleSheet, Alert, ScrollView, Platform, StatusBar, KeyboardAvoid
 import { useFocusEffect } from '@react-navigation/native';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { createThumbnail } from 'react-native-create-thumbnail';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { STRINGS } from '../../common/strings';
@@ -131,7 +132,8 @@ const AddVideoScreen = ({ navigation }) => {
 
       const thumbnailPromise = createThumbnail({
         url: url,
-        timeStamp: 1000,
+        timeStamp: 0,
+        format: 'jpeg',
       });
 
       const thumbnail = await Promise.race([thumbnailPromise, timeoutPromise])
@@ -189,20 +191,17 @@ const AddVideoScreen = ({ navigation }) => {
     }
 
     const options = {
-      mediaType: 'video',
       selectionLimit: 1,
-      // SIMULATOR COMPATIBILITY: Force H.264 transcoding
-      videoQuality: 'low', // 'low' or 'medium' forces transcoding to H.264 which Simulators support
-      includeExtra: true,
-      assetRepresentationMode: 'current', // Avoids 'compatible' mode issues
+      videoQuality: Platform.OS === 'ios' ? 'medium' : 'high',
+      assetRepresentationMode: 'current',
     };
 
     try {
       let response;
       if (type === 'camera') {
-        response = await launchCamera(options);
+        response = await launchCamera({ ...options, loadingIndicatorSource: null, mediaType: 'video', saveToPhotos: true });
       } else {
-        response = await launchImageLibrary(options);
+        response = await launchImageLibrary({ ...options, mediaType: 'video' });
       }
 
       if (isMounted.current) {

@@ -35,14 +35,12 @@ const UploadScreen = ({ navigation, route }) => {
         if (intervalRef.current) clearInterval(intervalRef.current);
 
         const fileSize = media?.sizeInBytes || 1024 * 1024;
-        let uploadSpeed = 2 * 1024 * 1024; // Default 2 MB/s
+        let uploadSpeed = 2 * 1024 * 1024;
 
-        // CHECK: Accelerate upload for large files (Video > 500MB, Photo > 50MB)
         const isLargeVideo = media?.type === STRINGS.MEDIA_TYPES.VIDEO && fileSize > 500 * 1024 * 1024;
         const isLargePhoto = media?.type === STRINGS.MEDIA_TYPES.PHOTO && fileSize > 50 * 1024 * 1024;
 
         if (isLargeVideo || isLargePhoto) {
-            // Speed up to finish in approx 5 seconds
             uploadSpeed = fileSize / 5;
         }
 
@@ -311,77 +309,6 @@ const styles = StyleSheet.create({
     },
     uploadInfo: {
         alignItems: 'center',
-    },
-    progressTextContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    percentText: {
-        ...FONTS.BOLD,
-        color: COLORS.PRIMARY,
-    },
-    uploadingLabel: {
-        ...FONTS.MEDIUM,
-        fontSize: SIZES.body1,
-        color: COLORS.TEXT_SECONDARY,
-        marginTop: 0,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
-    },
-    barContainer: {
-        width: '100%',
-        height: 14,
-        backgroundColor: '#E0E0E0',
-        borderRadius: 7,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: COLORS.BORDER,
-    },
-    barFill: {
-        height: '100%',
-        borderRadius: 7,
-    },
-    statusMessage: {
-        alignItems: 'center',
-        paddingVertical: 20,
-    },
-    statusIcon: {
-        marginBottom: 28,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-    },
-    statusTitleSuccess: {
-        ...FONTS.BOLD,
-        fontSize: 32,
-        color: COLORS.SUCCESS,
-        textAlign: 'center',
-    },
-    statusTitleError: {
-        ...FONTS.BOLD,
-        fontSize: 32,
-        color: COLORS.ERROR,
-        textAlign: 'center',
-    },
-    statusTitleWarning: {
-        ...FONTS.BOLD,
-        fontSize: 32,
-        color: COLORS.WARNING,
-        textAlign: 'center',
-    },
-    statusDesc: {
-        ...FONTS.REGULAR,
-        fontSize: SIZES.body2,
-        color: COLORS.TEXT_SECONDARY,
-        textAlign: 'center',
-        marginTop: 10,
-        lineHeight: 20,
-        maxWidth: '90%',
-    },
-    actionButton: {
-        marginTop: 30,
-        minWidth: 200,
     },
     footer: {
         paddingHorizontal: 24,

@@ -30,9 +30,9 @@ const AddPhotoScreen = ({ navigation }) => {
     };
   }, []);
 
-  const simulateProgress = (fileSize = 0) => {
-    const possibleIncrements = [5, 8, 12, 15];
-    const interval_ms = 100;
+  const simulateProgress = () => {
+    const possibleIncrements = [10, 15, 20];
+    const interval_ms = 50;
 
     const interval = setInterval(() => {
       if (!isMounted.current) {
@@ -40,11 +40,11 @@ const AddPhotoScreen = ({ navigation }) => {
         return;
       }
       setProcessingProgress(prev => {
-        if (prev >= 90) {
-          return 90;
+        if (prev >= 95) {
+          return 95;
         }
         const randomIncrement = possibleIncrements[Math.floor(Math.random() * possibleIncrements.length)];
-        return Math.min(90, prev + randomIncrement);
+        return Math.min(95, prev + randomIncrement);
       });
     }, interval_ms);
 
@@ -53,21 +53,24 @@ const AddPhotoScreen = ({ navigation }) => {
   };
 
   const handleCallback = async (response) => {
-    if (isMounted.current) {
-      setIsSelectingCamera(false);
-      setIsSelectingGallery(false);
-    }
-
     if (!isMounted.current) return;
 
-    if (response.didCancel) return;
+    if (response.didCancel) {
+      setIsSelectingCamera(false);
+      setIsSelectingGallery(false);
+      return;
+    }
 
     if (response.errorCode) {
+      setIsSelectingCamera(false);
+      setIsSelectingGallery(false);
       Alert.alert(STRINGS.COMMON.ERROR, response.errorMessage || "An error occurred");
       return;
     }
 
     if (!response.assets || response.assets.length === 0) {
+      setIsSelectingCamera(false);
+      setIsSelectingGallery(false);
       Alert.alert(STRINGS.COMMON.ERROR, "Failed to select image. Please try again.");
       return;
     }
@@ -76,6 +79,8 @@ const AddPhotoScreen = ({ navigation }) => {
       const selectedPhoto = response.assets[0];
 
       if (!selectedPhoto.uri) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
         Alert.alert(STRINGS.COMMON.ERROR, "Failed to load image. Please try another one.");
         return;
       }
@@ -83,23 +88,27 @@ const AddPhotoScreen = ({ navigation }) => {
       const { isValid, error: vError } = validatePhoto(selectedPhoto);
 
       if (!isValid) {
+        setIsSelectingCamera(false);
+        setIsSelectingGallery(false);
         Alert.alert(STRINGS.COMMON.ERROR, vError);
         return;
       }
-
-      setProcessingProgress(0);
 
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
         progressIntervalRef.current = null;
       }
 
+      setProcessingProgress(0);
       setPhoto(selectedPhoto);
       setIsProcessing(true);
 
-      const progressInterval = simulateProgress(selectedPhoto.fileSize);
+      setIsSelectingCamera(false);
+      setIsSelectingGallery(false);
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const progressInterval = simulateProgress();
+
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       clearInterval(progressInterval);
 
@@ -109,7 +118,7 @@ const AddPhotoScreen = ({ navigation }) => {
           if (isMounted.current) {
             setIsProcessing(false);
           }
-        }, 500);
+        }, 200);
       }
     }
   };
@@ -132,27 +141,20 @@ const AddPhotoScreen = ({ navigation }) => {
     }
 
     const options = {
-      mediaType: 'photo',
       selectionLimit: 1,
       quality: 0.8,
-      maxWidth: 1080, // Reduced resolution ensures successful conversion on simulators
+      maxWidth: 1080,
       maxHeight: 1080,
       includeBase64: false,
-      includeExtra: true,
-      assetRepresentationMode: 'current', // Avoids 'compatible' mode issues on simulators
+      assetRepresentationMode: 'current',
     };
 
     try {
       let response;
       if (isCamera) {
-        response = await launchCamera(options);
+        response = await launchCamera({ ...options, mediaType: 'photo', saveToPhotos: true });
       } else {
-        response = await launchImageLibrary(options);
-      }
-
-      if (isMounted.current) {
-        setIsSelectingCamera(false);
-        setIsSelectingGallery(false);
+        response = await launchImageLibrary({ ...options, mediaType: 'photo' });
       }
 
       handleCallback(response);
@@ -161,11 +163,6 @@ const AddPhotoScreen = ({ navigation }) => {
         setIsSelectingCamera(false);
         setIsSelectingGallery(false);
         Alert.alert(STRINGS.COMMON.ERROR, isCamera ? STRINGS.COMMON.CAMERA_LAUNCH_ERROR : STRINGS.COMMON.GALLERY_LAUNCH_ERROR);
-      }
-    } finally {
-      if (isMounted.current) {
-        setIsSelectingCamera(false);
-        setIsSelectingGallery(false);
       }
     }
   };

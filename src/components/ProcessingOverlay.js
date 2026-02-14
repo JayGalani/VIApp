@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 10,
-        borderRadius: 10, // Match typical container radius if overlaying inside a rounded view
+        borderRadius: 10,
     },
     progressContainer: {
         width: 120,

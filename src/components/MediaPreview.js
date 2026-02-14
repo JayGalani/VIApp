@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         width: '100%',
         height: 300,
-        backgroundColor: COLORS.LIGHT_GRAY,
+        backgroundColor: COLORS.BLACK,
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     previewImage: {
         width: '100%',
         height: '100%',
-        resizeMode: 'cover',
+        resizeMode: 'contain',
         borderRadius: 10,
     },
     placeholder: {
