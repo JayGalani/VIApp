@@ -188,9 +188,9 @@ const AddPhotoScreen = ({ navigation }) => {
     navigation.navigate(STRINGS.SCREEN_NAMES.UPLOAD_SCREEN, { media: newPhoto });
   };
 
-  const handleBackPress = () => {
+  const handleBackPress = React.useCallback(() => {
     navigation.navigate(STRINGS.SCREEN_NAMES.LIST);
-  };
+  }, [navigation]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -200,7 +200,7 @@ const AddPhotoScreen = ({ navigation }) => {
       };
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => subscription.remove();
-    }, [])
+    }, [handleBackPress])
   );
 
   return (

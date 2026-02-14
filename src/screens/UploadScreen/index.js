@@ -89,7 +89,7 @@ const UploadScreen = ({ navigation, route }) => {
         startUpload();
     };
 
-    const handleCancel = () => {
+    const handleCancel = useCallback(() => {
         if (status === 'success') {
             navigation.navigate(STRINGS.SCREEN_NAMES.LIST);
         } else if (status === 'uploading') {
@@ -101,15 +101,15 @@ const UploadScreen = ({ navigation, route }) => {
         } else {
             navigation.goBack();
         }
-    };
+    }, [status, navigation]);
 
-    const handleGoBack = () => {
+    const handleGoBack = useCallback(() => {
         if (status === 'success') {
             navigation.navigate(STRINGS.SCREEN_NAMES.LIST);
         } else {
             handleCancel();
         }
-    };
+    }, [status, navigation, handleCancel]);
 
     useFocusEffect(
         React.useCallback(() => {
@@ -121,7 +121,7 @@ const UploadScreen = ({ navigation, route }) => {
             const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
             return () => subscription.remove();
-        }, [status, navigation])
+        }, [handleGoBack])
     );
 
     const handleNavigateToList = () => {

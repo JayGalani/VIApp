@@ -137,7 +137,7 @@ const AddVideoScreen = ({ navigation }) => {
       });
 
       const thumbnail = await Promise.race([thumbnailPromise, timeoutPromise])
-        .catch((err) => {
+        .catch((_) => {
           return null;
         });
 
@@ -244,9 +244,9 @@ const AddVideoScreen = ({ navigation }) => {
     navigation.navigate(STRINGS.SCREEN_NAMES.UPLOAD_SCREEN, { media: newVideo });
   };
 
-  const handleBackPress = () => {
+  const handleBackPress = React.useCallback(() => {
     navigation.navigate(STRINGS.SCREEN_NAMES.LIST);
-  };
+  }, [navigation]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -256,7 +256,7 @@ const AddVideoScreen = ({ navigation }) => {
       };
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       return () => subscription.remove();
-    }, [])
+    }, [handleBackPress])
   );
 
   return (
